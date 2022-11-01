@@ -1,44 +1,7 @@
-#################################################
-# TwoBars robot demo
-import math
 import numpy
+import matplotlib.pyplot as plt
 
-# >>> from importlib import reload
-# >>> import calibration_demo,robot
-
-#################################################
-# Definition of a RR robot with approximate architecture
-import robot
-
-
-
-## Actuating and measuring
-# r.actuate([0,90])
-# r.measure_pose()
-# r.measure_pose()
-# r.measure_command()
-# r.measure_command()
-
-# ## Tracing pose
-# r.go_home()
-# r.pen_down()
-# r.actuate([0,90])
-# r.actuate([90,360])
-# r.pen_up()
-
-# Invalid commands
-# r.actuate([180,180])
-# r.actuate([120,180])
-# r.actuate([180,180])
-
-# Approximate robots
-
-
-#################################################
-# CALIBRATION
-
-#------------------------------------------------
-# RR kinematic functions
+# returns 5R kinematic functions
 def f_5R(architecture,pose,command):
     [a1,a2,a3,a4,a5,a6,a7,a8] = architecture
     [x1,x2] = pose
@@ -49,20 +12,20 @@ def f_5R(architecture,pose,command):
 
 #------------------------------------------------
 # Actuation of the robot in order to generate measures for calibration
-def make_measurements(r2,commands,col='black',mar='*'):
-    r2.actuate(commands[0])
+def make_measurements(robot,commands,col='black',mar='*'):
+    robot.actuate(commands[0])
     if col!='black':
-        r2.pen_down(col)
+        robot.pen_down(col)
     measures=[]
     print('   Taking measures ...')
     for q in commands:
-        r2.actuate(q)
-        x = r2.measure_pose()
-        r2.ax.plot([x[0]],[x[1]],color=col,marker=mar)
+        robot.actuate(q)
+        x = robot.measure_pose()
+        robot.ax.plot([x[0]],[x[1]],color=col,marker=mar)
         measures.append((x,q))
     if col!='black':
-        r2.pen_up()
-    r2.go_home()
+        robot.pen_up()
+    robot.go_home()
     return measures
 
 #------------------------------------------------
@@ -87,18 +50,30 @@ def calibrate(kinematic_functions,nominal_architecture,measures):
 #------------------------------------------------
 # Calibration : first choice of commands and resulting measurements
 
-def main_calibration():
-    nominal_architecture = [-22.5, 0, 22.5, 0, 17.8, 17.8, 17.8, 17.8]
-    r = robot.FiveBars(nominal_architecture,mode=0,seed=4,man_var=0.2,mes_var=0.02)
-    r.actuate([0,90])
+def calibration(rob, nominal_architecture):
+
+
+    rob.actuate([0,90])
     commands = [[q1,q2] for q1 in range(0,91,10) for q2 in range(135,181,10)] + [[q1,q2] for q1 in range(0,46,10) for q2 in range(90,181,10)]
-    measures = make_measurements(r,commands,col='red')
+    measures = make_measurements(rob,commands,col='red')
     calibrated_architecture = calibrate(f_5R,nominal_architecture,measures)
+    print("calibrated architecture computed :", calibrated_architecture)
     return calibrated_architecture
 
-#------------------------------------------------
-#Calibration : second choice of commands and resulting measurements
-#commands = [[q1,q2] for q1 in range(0,46,10) for q2 in range(90,181,10)]
-#measures = make_measurements(r,commands,col='blue',mar='o')
-#calibrated_architecture = calibrate(f_5R,nominal_architecture,measures)
-#print(r.get_architecture())
+def assessing_calibration(rob):
+
+    #ibex solutions to get to point (5,-20)
+    solutions = [[-0.9504112839896566,3.277549500061275],[-0.9504112839896566,4.717886729423507],
+                 [-0.3118221968206622, 3.277549500061275],[-0.3118221968206622,4.717886729423507]]
+    rob.ax.plot([5],[-20],color='black',marker='*')
+    colors = ['blue','green','yellow', 'red']
+    for s in range(len(solutions)):
+        rob.pen_up()
+        rob.go_home()
+        rob.pen_down(color=colors[s])
+        rob.actuate([numpy.degrees(solutions[s][0]), numpy.degrees(solutions[s][1])])
+        print("point atteint : ",rob.measure_pose())
+        rob.refresh()
+    plt.savefig("out/calibration/assessed_calibration.png")
+
+
