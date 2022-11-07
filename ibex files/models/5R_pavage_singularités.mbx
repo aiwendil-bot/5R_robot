@@ -1,4 +1,5 @@
-// ibexsolve 5R.mbx
+// ibexsolve 5R.mbx -e0.2 -E0.6
+// on ne 
 constants
 
     // architecture parameters
@@ -18,7 +19,7 @@ variables
 
     // pose parameters
      
-    x1 in [-15,15];
+    x1 in [-20,20];
     x2 in [-30,30];
     // command parameters
     q1 in [-pi,pi];
@@ -29,7 +30,7 @@ constraints
     // kinematic equations
     -l2^2 + (-a1 + x1 - l1*cos(q1))^2 + (x2 - l1*sin(q1) -a2)^2 = 0;
     -l4^2 + (-a3 + x1 - l3*cos(q2))^2 + (x2 - l3*sin(q2) -a4)^2 = 0;
-    //contraintes det(Jacobienne) > 0
+    //contraintes det(Jacobienne)^2 > 0
     
     ((2*(x1 - a1 - l1 * cos(q1)) * 2 * (x2 - l2 * sin(q2) - a4)) - (2 * (x1 - a3 -l2 * cos(q2)) * 2*(x2 - l1 * sin(q1) - a2)))^2 > 0;
     ((2 *(-a1 * l1 * sin(q1) + l1 * a2 * cos(q1) + l1 * x1 * sin(q1) - l1 * x2 * cos(q1))) * (2 * (-a3 * l2 * sin(q2) + l2 * a4 * cos(q2) + l2 * x1 * sin(q2) - l2 * x2 * cos(q2) )))^2 > 0;

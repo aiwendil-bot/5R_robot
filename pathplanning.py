@@ -50,16 +50,19 @@ def milieu(box):
             (box.vec[6] + box.vec[7]) / 2]
 
 
-# vérifie plusieurs critères pour s'assurer qu'un chemin est valide. dans l'ordre :
+# vérifie plusieurs critères pour s'assurer qu'un chemin est valide pour un mode du robot
+# les calculs sont faits avec l'architecture calibrée
 
-# si le robot n'arrive pas à atteindre la case de départ pour le mode 0, le chemin est invalide
-# si le milieu d'une des boites est à l'intérieur d'un obstacle, le chemin est invalide
-
-
-def check_path(paving, path, q0, a, mode):
-    commands = [q0]
+def check_path(paving, path, a, mode):
     [x1, y1, x2, y2, L1, l1, L2, l2] = a
     poses = []
+
+    # pour chaque boite, on vérifie
+    #   -> si les commandes de celle ci ne conduisent pas à une singularité
+    #   -> si est bien atteignable pour le mode (en paramètre) en utilisant les commandes de la boite
+    #   -> si le centre de la boite n'est pas dans un obstacle
+    #   -> si les commandes calculées de proche en proche (via root, comme dans le path following) ne conduisent
+    #      pas à une singularité
     for i in range(len(path)):
         [q1, q2] = milieu(paving.boxes[path[i]])[2:]
         # elbow1 pose
@@ -69,38 +72,43 @@ def check_path(paving, path, q0, a, mode):
         # effector poses
         poses.append(robot.circles_intersections(e1x, e1y, l1, e2x, e2y, l2))
         if len(robot.circles_intersections(e1x, e1y, l1, e2x, e2y, l2)) != 2:
-            print("path impossible : singularité au départ ou arrivée")
+            print("path impossible : singularité")
             return False
 
-
         if scipy.spatial.distance.euclidean(poses[i][mode],
-                                            milieu(paving.boxes[path[i]])[:2]) > 0.5 or scipy.spatial.distance.euclidean(
-                poses[i][mode], milieu(paving.boxes[path[i]])[:2]) > 0.5:
+                                            milieu(paving.boxes[path[i]])[
+                                            :2]) > 0.3 or scipy.spatial.distance.euclidean(
+            poses[i][mode], milieu(paving.boxes[path[i]])[:2]) > 0.5:
             print("path impossible pour le mode ", mode)
             return False
 
-    if mode == 0:
-        if (milieu(paving.boxes[path[0]])[2] < 0 or milieu(paving.boxes[path[0]])[2] > np.pi/2 ) or (milieu(paving.boxes[path[0]])[3] < np.pi/2 or milieu(paving.boxes[path[0]])[3] > np.pi ):
-            print("condition angle départ")
-            return False
-        if (milieu(paving.boxes[path[-1]])[2] < 0 or milieu(paving.boxes[path[-1]])[2] > np.pi/2 ) or (milieu(paving.boxes[path[-1]])[3] < np.pi/2 or milieu(paving.boxes[path[-1]])[3] > np.pi ):
-            print("condition angle arrivée")
-            return False
+        for (x, y, r) in circles:
+            if (milieu(paving.boxes[path[i]])[0] - x) ** 2 + (milieu(paving.boxes[path[i]])[1] - y) ** 2 <= r ** 2:
+                print("path impossible : obstacle")
+                return False
 
-    # for index_b in range(len(path)):
-    #     for (x, y, r) in circles:
-    #         if (milieu(paving.boxes[path[index_b]])[0] - x) ** 2 + (milieu(paving.boxes[path[index_b]])[1] - y) ** 2 <= r ** 2:
-    #             print("path impossible : obstacle")
-    #             return False
+    commands = [milieu(paving.boxes[path[0]])[2:]]
+    for i in range(1, len(path)):
+        [q1, q2] = solve(a, milieu(paving.boxes[path[i]])[:2], commands[-1])
+        commands.append([q1, q2])
+        e1x, e1y = x1 + L1 * np.cos(q1), y1 + L1 * np.sin(q1)
+        # elbow2 pose
+        e2x, e2y = x2 + L2 * np.cos(q2), y2 + L2 * np.sin(q2)
+        if len(robot.circles_intersections(e1x, e1y, l1, e2x, e2y, l2)) != 2:
+            print("path impossible : singularité")
+            return False
 
     return True
 
 
 def main_pathplanning(cov_file, architectures):
+    # en rouge, on affiche le chemin calculé avec l'architecture nominale, en vert avec l'architecture calibrée
     colors = ["red", "green"]
     p = paving.Paving()
     print("chargement du paving...")
     p.from_covfile(cov_file)
+
+    # on sauvegarde les pavings (coordonnées et commandes)
 
     fig1, ax1 = plt.subplots()
     ax1.axis(p.hull([1, 2]))
@@ -120,8 +128,7 @@ def main_pathplanning(cov_file, architectures):
     boxes_depart = []
     boxes_arrivee = []
 
-    # on utilise boxes intersecting pour déterminer quelles boites contiennent les points de départ et d'arrivée,
-    # peu importe les commandes
+    # on utilise boxes intersecting pour déterminer quelles boites contiennent les points de départ et d'arrivée
     print("boxes de départ possibles :")
     for b in p.boxes_intersecting([0, -15, -np.pi, 0], [0, -15, np.pi, 2 * np.pi]):
         boxes_depart.append(b)
@@ -135,21 +142,21 @@ def main_pathplanning(cov_file, architectures):
     # matrice d'adjacence pour calculer les plus courts chemins
     adj = p.adjacency_matrix()
 
-    possibles_paths = [[],[]]
+    possibles_paths = [[], []]
     # filtrage des paths possibles (le centre des boites ne doit pas se trouver à l'intérieur d'un obstacle
-    # on considère les chemins entre chaque paire (boite départ, boite arrivée) et pour chaque architecture
+    # on considère les chemins entre chaque paire (boite départ, boite arrivée)
+    # on sépare les chemins selon le mode pour lequel ils sont valables
     print("calcul des plus courts chemins et vérification de leurs faisabilité...")
     for b1 in boxes_depart:
         dist_matrix, predecessors = dijkstra(csgraph=adj, directed=False, indices=b1, return_predecessors=True)
         for b2 in boxes_arrivee:
             candid = get_path(predecessors, b2)
             for mode in range(2):
-                if check_path(p, candid, milieu(p.boxes[candid[0]])[2:], architectures[1], mode):
+                if check_path(p, candid, architectures[1], mode):
                     possibles_paths[mode].append(candid)
 
-
-
     print("nombre de paths possibles : ", len(possibles_paths[0]) + len(possibles_paths[1]))
+
     for mode in range(2):
         print(f"using mode {mode}...")
         for indice_path in range(len(possibles_paths[mode])):
@@ -161,16 +168,19 @@ def main_pathplanning(cov_file, architectures):
             # on affiche les boxes du chemin en jaune
             sp0 = p.subpaving(possibles_paths[mode][indice_path])
             sp0.draw2D(ax1, 1, 2, ec=None, fc='yellow')
+            # on affiche les obstacles en bleu
             for (x, y, r) in circles:
-                rob.ax.add_artist(plt.Circle((x, y), r, color='orange', fill=True))
+                rob.ax.add_artist(plt.Circle((x, y), r, color='blue', fill=True))
             traj = []
             # on affiche les centres des boites en noir (ce sont les points à atteindre pour le robot)
             for index in possibles_paths[mode][indice_path]:
                 traj.append(milieu(p.boxes[index])[:2])
-                rob.ax.plot(milieu(p.boxes[index])[0], milieu(p.boxes[index])[1], color='black', marker='*', markersize=0.5)
-            # on fait le chemin pour chaque architecture
+                rob.ax.plot(milieu(p.boxes[index])[0], milieu(p.boxes[index])[1], color='black', marker='*',
+                            markersize=0.5)
+            # on fait le chemin pour chaque architecture (on réutilise la fonction path_following)
             for k in range(len(architectures)):
                 name = "nominal" if k == 0 else "calibrated"
                 print(f"using {name} architecture...")
-                path_following(rob, architectures[k], milieu(p.boxes[possibles_paths[mode][indice_path][0]])[2:], traj, colors[k])
+                path_following(rob, architectures[k], milieu(p.boxes[possibles_paths[mode][indice_path][0]])[2:], traj,
+                               colors[k])
             plt.savefig(f"out/pathplanning/path_mode_{mode}_{indice_path + 1}.png")

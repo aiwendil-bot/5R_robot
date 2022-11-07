@@ -70,10 +70,11 @@ def calibration(rob, nominal_architecture):
 def assessing_calibration():
 
     #ibex solutions to get to point (5,-20)
-    ibex_solutions = [[[-0.9706922251069474, -0.9706922251069458], [3.278947809944586, 3.278947809944588]],
-                  [[-0.9706922251069474, -0.9706922251069458],[4.716488419540196, 4.716488419540199]],
-                  [[-0.291541255703371, -0.2915412557033691], [3.278947809944586, 3.278947809944588]],
-                  [[-0.291541255703371, -0.2915412557033691], [4.716488419540196, 4.716488419540199]]]
+
+    ibex_solutions = [[[-0.9505230944502173, -0.9505230944502156], [3.277668513324156, 3.277668513324159]],
+                    [[-0.9505230944502173, -0.9505230944502156], [4.717543243455343, 4.717543243455345]],
+                    [[-0.3122534142862878, -0.312253414286286], [3.277668513324156, 3.277668513324159]],
+                    [[-0.3122534142862878, -0.312253414286286], [4.717543243455343, 4.717543243455345]]]
 
 # on prend la moyenne pour chaque commande :
 
@@ -82,16 +83,20 @@ def assessing_calibration():
 
     #ibex solutions to get to point (5,20)
 
-    ibex_solutions2 = [[[0.2777791892666854, 0.2777791892666872], [1.565918675729136, 1.565918675729138]],
-    [[0.2777791892666854, 0.2777791892666872], [3.010730358302635, 3.010730358302638]],
-    [[0.9754140743428796, 0.9754140743428813], [1.565918675729136, 1.565918675729138]],
-    [[0.9754140743428796, 0.9754140743428813], [3.010730358302635, 3.010730358302638]]]
+    ibex_solutions2 =  [[[0.297761732175144, 0.2977617321751462], [1.565054120561338, 1.565054120561339]],
+                        [[0.297761732175144, 0.2977617321751462], [3.010994925333172, 3.010994925333175]],
+                        [[0.955825712186945, 0.9558257121869466], [1.565054120561338, 1.565054120561339]],
+                        [[0.955825712186945, 0.9558257121869466], [3.010994925333172, 3.010994925333175]]]
+
 
     solutions2 = [[(command[0][0] + command[0][1]) / 2, (command[1][0] + command[1][1]) / 2] for command in
                  ibex_solutions2]
 
     initial_solutions = [solutions,solutions2]
+    points =[(5,-20),(5,20)]
     for i in range(len(initial_solutions)):
+        print(f"assessing calibration : trying to go to point {points[i]}")
+
         #pour atteindre le point (5,20), le robot doit être en mode 1
         rob = robot.FiveBars([-22.5, 0, 22.5, 0, 17.8, 17.8, 17.8, 17.8], mode=i, seed=4, man_var=0.2, mes_var=0.02)
         print("mode du robot : ", i)
@@ -104,6 +109,5 @@ def assessing_calibration():
             rob.pen_down(color=colors[s])
             rob.actuate([numpy.degrees(initial_solutions[i][s][0]), numpy.degrees(initial_solutions[i][s][1])])
             print("point atteint : ",rob.measure_pose())
-            print(numpy.radians(rob.measure_command()[0]),numpy.radians(rob.measure_command()[1]))
         plt.savefig(f"out/calibration/assessed_calibration{i+1}.png")
         plt.close()

@@ -7,12 +7,10 @@ import matplotlib.pyplot as plt
 # solutions calculées par IBEX (en utilisant l'architecture calibrée)
 # modèle : assessing_calib.mbx (cf calibration)
 
-ibex_solutions = [[[-0.9706922251069474, -0.9706922251069458], [3.278947809944586, 3.278947809944588]],
-                  [[-0.9706922251069474, -0.9706922251069458],[4.716488419540196, 4.716488419540199]],
-                  [[-0.291541255703371, -0.2915412557033691], [3.278947809944586, 3.278947809944588]],
-                  [[-0.291541255703371, -0.2915412557033691], [4.716488419540196, 4.716488419540199]]]
-
-
+ibex_solutions = [[[-0.9505230944502173, -0.9505230944502156], [3.277668513324156, 3.277668513324159]],
+                  [[-0.9505230944502173, -0.9505230944502156], [4.717543243455343, 4.717543243455345]],
+                  [[-0.3122534142862878, -0.312253414286286], [3.277668513324156, 3.277668513324159]],
+                  [[-0.3122534142862878, -0.312253414286286], [4.717543243455343, 4.717543243455345]]]
 
 # on prend la moyenne pour chaque commande :
 
@@ -64,5 +62,6 @@ def main_pathfollowing(architectures, sol_initiales, positions):
         for k in range(len(architectures)):
             name = "nominal" if k == 0 else "calibrated"
             print(f"using {name} architecture...")
+            rob.pen_up()
             path_following(rob, architectures[k], sol_initiales[i], positions, colors[k])
         plt.savefig(f"out/pathfollowing/solution_{i + 1}.png")

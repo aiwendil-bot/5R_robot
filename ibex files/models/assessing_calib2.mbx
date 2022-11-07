@@ -1,15 +1,17 @@
-// ibexsolve 5R.mbx
+// ibexsolve 5R.mbx -s
+// j'ai affiché les solutions en console pour les copier vers le script python
+// on n'a pas pas besoin de spécifier la taille des boites ici (la valeur par défaut 10^-3 pour e suffit)
 constants
 
     // calibrated architecture parameters
-    a1 = -22.49629368;
-    a2 = 0.09502097;
-    a3 = 22.40372736;
-    a4 = 0.05769971;
-    l1 = 17.99095831;
-    l2 = 18.11306611;
-    l3 = 17.889752;
-    l4 = 17.61103216;
+    a1 = -22.4827476;
+    a2 = 0.09657084;
+    a3 = 22.40045036;
+    a4 = 0.0493766;
+    l1 = 17.97896946;
+    l2 = 17.88814187;
+    l3 = 18.11218982;
+    l4 = 17.60076237;
     
     //on veut atteindre le point (5,20)
     x1 = 5;
