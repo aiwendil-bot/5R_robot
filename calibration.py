@@ -51,20 +51,21 @@ def calibrate(kinematic_functions,nominal_architecture,measures):
     return sol.x
 
 #------------------------------------------------
-# Calibration : first choice of commands and resulting measurements
+
 
 def calibration(rob, nominal_architecture):
-
-
-    rob.actuate([0,90])
+    # Calibration : first choice of commands and resulting measurements
     commands1 = [[q1,q2] for q1 in range(0,91,10) for q2 in range(135,181,10)]
     measures1 = make_measurements(rob,commands1,col='red')
     calibrated_architecture1 = calibrate(f_5R,nominal_architecture,measures1)
+    print("première calibration : ",calibrated_architecture1)
+
+    # Calibration : first choice of commands and resulting measurements
     commands2 = [[q1,q2] for q1 in range(0,46,10) for q2 in range(90,181,10)]
     measures2 = make_measurements(rob,commands2,col='red')
     calibrated_architecture2 = calibrate(f_5R,calibrated_architecture1,measures2)
 
-    print("calibrated architecture computed :", calibrated_architecture2)
+    print("final calibrated architecture computed :", calibrated_architecture2)
     return calibrated_architecture2
 
 def assessing_calibration():

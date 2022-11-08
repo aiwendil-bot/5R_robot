@@ -11,7 +11,6 @@ def main():
     # ---------------CALIBRATION-----------------------------------------------------------------
 
     nominal_architecture = [-22.5, 0, 22.5, 0, 17.8, 17.8, 17.8, 17.8]
-    rob = robot.FiveBars(nominal_architecture, mode=0, seed=4, man_var=0.2, mes_var=0.02)
 
     input('Press <ENTER> to start calibration...')
     #calibrated_architecture = calibration.calibration(rob, nominal_architecture)

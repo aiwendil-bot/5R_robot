@@ -28,7 +28,7 @@ def solve(a, x, q0):
 
     return scipy.optimize.root(fun, q0).x
 
-#discretise le cercle (center, radius) en un nombre nb_points de points
+#discrétise le cercle (center, radius) en un nombre nb_points de points
 def compute_circle_discretisation(center, radius, nb_points):
     discretisation = np.linspace(0, 2 * np.pi, nb_points)
     return [[center[0] + radius * np.cos(t), center[1] + radius * np.sin(t)] for t in discretisation]
@@ -41,7 +41,6 @@ def path_following(rob, architecture, sol_initiale, pos, color):
 
     for i in range(1, len(pos)):
         q = solve(architecture, pos[i], commands[-1])
-
         commands.append(q)
 
     for c in commands:
