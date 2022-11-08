@@ -56,6 +56,7 @@ def main_pathfollowing(architectures, sol_initiales, positions):
     for i in range(len(sol_initiales)):
         print(f"using initial solution n°{i + 1}...")
         rob = robot.FiveBars(architectures[0], mode=0, seed=4, man_var=0.2, mes_var=0.02)
+        #affichage des points à atteindre
         for point in positions:
             rob.ax.plot(point[0], point[1], color='black', marker='*', markersize=0.2)
         for k in range(len(architectures)):

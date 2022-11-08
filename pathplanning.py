@@ -157,6 +157,7 @@ def main_pathplanning(cov_file, architectures):
 
     print("nombre de paths possibles : ", len(possibles_paths[0]) + len(possibles_paths[1]))
 
+    # on affiche les chemins pour chaque mode
     for mode in range(2):
         print(f"using mode {mode}...")
         for indice_path in range(len(possibles_paths[mode])):

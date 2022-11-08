@@ -19,9 +19,7 @@ constants
 
 
 variables 
-
-    // pose parameters
-     
+    
 
     // command parameters
     q1 in [-pi,pi];

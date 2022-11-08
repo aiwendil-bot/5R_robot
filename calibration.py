@@ -53,7 +53,8 @@ def calibrate(kinematic_functions,nominal_architecture,measures):
 #------------------------------------------------
 
 
-def calibration(rob, nominal_architecture):
+def calibration(nominal_architecture):
+    rob = robot.FiveBars(nominal_architecture, mode=0, seed=4, man_var=0.2, mes_var=0.02)
     # Calibration : first choice of commands and resulting measurements
     commands1 = [[q1,q2] for q1 in range(0,91,10) for q2 in range(135,181,10)]
     measures1 = make_measurements(rob,commands1,col='red')

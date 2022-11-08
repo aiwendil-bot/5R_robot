@@ -1,8 +1,8 @@
 // ibexsolve 5R.mbx -e0.2 -E0.6
-// on ne 
+// on ne voulait pas des boites trop petites pour des soucis de temps de calculs, mais des boites trop grosses conduisaient à de trop nombreux points dans les obstacles lors du calcul des chemins. 0.6 comme largeur max nous paraît être un bon compromis.
 constants
 
-    // architecture parameters
+    // calibrated architecture parameters
     a1 = -22.4827476;
     a2 = 0.09657084;
     a3 = 22.40045036;
@@ -11,8 +11,6 @@ constants
     l2 = 17.88814187;
     l3 = 18.11218982;
     l4 = 17.60076237;
-    //x1 = 0;
-    //x2 = -15;
 
 
 variables 
@@ -30,6 +28,7 @@ constraints
     // kinematic equations
     -l2^2 + (-a1 + x1 - l1*cos(q1))^2 + (x2 - l1*sin(q1) -a2)^2 = 0;
     -l4^2 + (-a3 + x1 - l3*cos(q2))^2 + (x2 - l3*sin(q2) -a4)^2 = 0;
+    
     //contraintes det(Jacobienne)^2 > 0
     
     ((2*(x1 - a1 - l1 * cos(q1)) * 2 * (x2 - l2 * sin(q2) - a4)) - (2 * (x1 - a3 -l2 * cos(q2)) * 2*(x2 - l1 * sin(q1) - a2)))^2 > 0;

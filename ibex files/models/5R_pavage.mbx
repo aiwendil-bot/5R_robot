@@ -1,7 +1,9 @@
-// ibexsolve 5R.mbx
+// ibexsolve 5R_pavage.mbx -e0.2 -E0.6
+// première version sans les contraintes de singularités. Nous ne l'avons pas utilisé pour nos tests
+
 constants
 
-    // architecture parameters
+    // calibrated architecture parameters
     a1 = -22.49629368;
     a2 = 0.09502097;
     a3 = 22.40372736;
